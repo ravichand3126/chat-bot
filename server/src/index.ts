@@ -13,7 +13,7 @@ dotenv.config({ path: path.join(process.cwd(), '..', '.env') });
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
 
-// Allowed Origins for Production, Render, Local Development, & Android APK (Capacitor WebView)
+// Allowed Origins for Production (Render, Vercel, Local Development, & Android APK Capacitor WebView)
 const allowedOrigins = [
   process.env.CLIENT_URL,
   'http://localhost:5173',
@@ -22,24 +22,29 @@ const allowedOrigins = [
   'http://localhost',
   'https://localhost',
   'capacitor://localhost',
-].filter(Boolean);
+].filter(Boolean) as string[];
 
 app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (e.g. mobile APK native webviews, curl, server-to-server)
       if (!origin) return callback(null, true);
-      
-      if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+
+      // Allow exact matches or Vercel preview/production deployments (*.vercel.app)
+      if (
+        allowedOrigins.includes(origin) ||
+        allowedOrigins.includes('*') ||
+        origin.endsWith('.vercel.app')
+      ) {
         return callback(null, true);
       }
-      
+
       // In production, reject unauthorized web origins
       if (process.env.NODE_ENV === 'production') {
         console.warn(`[CORS] Blocked request from origin: ${origin}`);
         return callback(new Error('CORS request rejected: Origin not allowed.'));
       }
-      
+
       return callback(null, true);
     },
     credentials: true,
