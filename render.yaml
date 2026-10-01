@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: monochrome-ai-chatbot-server
+    env: node
+    rootDir: server
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CLIENT_URL
+        value: https://localhost
+      - key: PORT
+        value: 3001
